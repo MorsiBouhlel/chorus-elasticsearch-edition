@@ -15,7 +15,7 @@ class App extends Component {
   render(){
   return (
     <ReactiveBase
-      url="http://197.13.18.10:9222"
+      url="http://chorus-es.dotit-corp.com"
       app="ecommerce"
       credentials="elastic:ElasticRocks"
       enableAppbase={false}
