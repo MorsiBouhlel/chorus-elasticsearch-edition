@@ -15,7 +15,7 @@ class App extends Component {
   render(){
   return (
     <ReactiveBase
-      url="http://localhost:9200"
+      url="http://197.13.18.10:9222"
       app="ecommerce"
       credentials="elastic:ElasticRocks"
       enableAppbase={false}
