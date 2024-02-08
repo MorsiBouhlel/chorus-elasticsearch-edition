@@ -14,9 +14,9 @@ services:
           exit 1;
         fi;
         echo "Waiting for Elasticsearch availability";
-        until curl -u 'elastic:${ELASTIC_PASSWORD}' -s elasticsearch:9200/_cluster/health | grep "yellow"; do sleep 30; done;
+        until curl -u 'elastic:${ELASTIC_PASSWORD}' -s elasticsearch:9222/_cluster/health | grep "yellow"; do sleep 30; done;
         echo "Setting kibana_system password";
-        until curl -s -X POST -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        until curl -s -X POST -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" http://elasticsearch:9222/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
 
@@ -51,23 +51,23 @@ services:
       - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es_data:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
+      - "9222:9222"
     healthcheck:
-      test: [ "CMD", "wget", "http://localhost:9200" ]
+      test: [ "CMD", "wget", "http://localhost:9222" ]
       interval: 30s
       timeout: 10s
       retries: 50
 
-  kibana:
-    container_name: kibana
-    image: docker.elastic.co/kibana/kibana:8.5.3
-    environment:
-      - SERVERNAME=kibana
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-    ports:
-      - 5601:5601
+  #kibana:
+  #  container_name: kibana
+  #  image: docker.elastic.co/kibana/kibana:8.5.3
+  #  environment:
+  #    - SERVERNAME=kibana
+  #    - ELASTICSEARCH_HOSTS=http://elasticsearch:9222
+  #    - ELASTICSEARCH_USERNAME=kibana_system
+  #    - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+  #  ports:
+  #    - 5601:5601
 
   chorus-ui:
     container_name: chorus_ui
@@ -125,9 +125,9 @@ services:
       - SMUI_DB_URL=jdbc:mysql://mysql:3306/smui?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
       - SMUI_DB_USER=root
       - SMUI_DB_PASSWORD=${SMUI_DB_PASSWORD}
-      - SMUI_DEPLOY_PRELIVE_SOLR_HOST=elasticsearch:9200
+      - SMUI_DEPLOY_PRELIVE_SOLR_HOST=elasticsearch:9222
       - SMUI_TOGGLE_UI_WITH_SOLR_FIELDS=false
-      - SMUI_2SOLR_SOLR_HOST=elasticsearch:9200
+      - SMUI_2SOLR_SOLR_HOST=elasticsearch:9222
       - SMUI_TOGGLE_DEPL_PRELIVE=true
       - SMUI_TOGGLE_SPELLING=true
       - SMUI_TOGGLE_DEPL_CUSTOM_SCRIPT=true
@@ -141,51 +141,51 @@ services:
     depends_on:
       - mysql
 
-  prometheus:
-    image: prom/prometheus:v2.32.1
-    container_name: prometheus
-    restart: always
-    ports:
-      - 9090:9090
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    healthcheck:
-      test: [ "CMD", "wget", "--tries=1", "--spider", "http://localhost:9090" ]
-      interval: 5s
-      timeout: 10s
-    volumes:
-      - ./prometheus/:/etc/prometheus/
+  #prometheus:
+  #  image: prom/prometheus:v2.32.1
+  #  container_name: prometheus
+  #  restart: always
+  #  ports:
+  #    - 9090:9090
+  #  command:
+  #    - '--config.file=/etc/prometheus/prometheus.yml'
+  #  healthcheck:
+  #    test: [ "CMD", "wget", "--tries=1", "--spider", "http://localhost:9090" ]
+  #    interval: 5s
+  #    timeout: 10s
+  #  volumes:
+  #    - ./prometheus/:/etc/prometheus/
 
-  grafana:
-    image: grafana/grafana:7.5.17
-    container_name: grafana
-    restart: always
-    ports:
-      - 9091:3000
-    volumes:
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-      - GF_USERS_ALLOW_SIGN_UP=true
-    healthcheck:
-      test: [ "CMD", "wget", "--tries=1", "--spider", "http://localhost:3000" ]
-      interval: 5s
-      timeout: 10s
-    depends_on:
-      - prometheus
+  #grafana:
+  #  image: grafana/grafana:7.5.17
+  #  container_name: grafana
+  #  restart: always
+  #  ports:
+  #    - 9091:3000
+  #  volumes:
+  #    - ./grafana/provisioning/:/etc/grafana/provisioning/
+  #  environment:
+  #    - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+  #    - GF_USERS_ALLOW_SIGN_UP=true
+  #  healthcheck:
+  #    test: [ "CMD", "wget", "--tries=1", "--spider", "http://localhost:3000" ]
+  #    interval: 5s
+  #    timeout: 10s
+  #  depends_on:
+  #    - prometheus
 
-  rre:
-    container_name: rre
-    build:
-      context: ./rre
-      dockerfile: Dockerfile
-    volumes:
-      - ./rre:/rre
-    ports:
-      - "7979:8080"
-    command: "java -jar rre-server-1.1.jar"
-    depends_on:
-      - elasticsearch
+#  rre:
+#    container_name: rre
+#    build:
+#      context: ./rre
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./rre:/rre
+#    ports:
+#      - "7979:8080"
+#    command: "java -jar rre-server-1.1.jar"
+#    depends_on:
+#      - elasticsearch
 
   embeddings:
     container_name: embeddings
@@ -207,7 +207,7 @@ services:
     image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
     container_name: elasticsearch-exporter
     command:
-      - '--es.uri=http://elasticsearch:9200'
+      - '--es.uri=http://elasticsearch:9222'
     environment:
       - ES_USERNAME=elastic
       - ES_PASSWORD=${ELASTIC_PASSWORD}
