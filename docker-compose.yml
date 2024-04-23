@@ -24,7 +24,7 @@ services:
     container_name: mysql
     image: amd64/mysql:5.7.42
     ports:
-      - 3306:3306
+      - 3310:3306
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=smui
