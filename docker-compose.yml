@@ -1,23 +1,23 @@
 version: '3.7'
 services:
 
-  setup:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
-    user: "0"
-    command: >
-      bash -c '
-        if [ x${ELASTIC_PASSWORD} == x ]; then
-          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
-          exit 1;
-        elif [ x${KIBANA_PASSWORD} == x ]; then
-          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
-          exit 1;
-        fi;
-        echo "Waiting for Elasticsearch availability";
-        until curl -u 'elastic:${ELASTIC_PASSWORD}' -s elasticsearch:9222/_cluster/health | grep "yellow"; do sleep 30; done;
-        echo "Setting kibana_system password";
-        until curl -s -X POST -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" http://elasticsearch:9222/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
-        echo "All done!";
+#  setup:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+#    user: "0"
+#    command: >
+#      bash -c '
+#        if [ x${ELASTIC_PASSWORD} == x ]; then
+#          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+#          exit 1;
+#        elif [ x${KIBANA_PASSWORD} == x ]; then
+#          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+#          exit 1;
+#        fi;
+#        echo "Waiting for Elasticsearch availability";
+#        until curl -u 'elastic:${ELASTIC_PASSWORD}' -s elasticsearch:9222/_cluster/health | grep "yellow"; do sleep 30; done;
+#        echo "Setting kibana_system password";
+#        until curl -s -X POST -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" http://elasticsearch:9222/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+#        echo "All done!";
       '
 
   mysql:
@@ -187,33 +187,33 @@ services:
 #    depends_on:
 #      - elasticsearch
 
-  embeddings:
-    container_name: embeddings
-    build:
-      context: ./embeddings
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - OMP_NUM_THREADS=1
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 512M
+#  embeddings:
+#    container_name: embeddings
+#    build:
+#      context: ./embeddings
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8000:8000"
+#    environment:
+#      - OMP_NUM_THREADS=1
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 4G
+#        reservations:
+#          memory: 512M
 
-  elasticsearch-exporter:
-    image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
-    container_name: elasticsearch-exporter
-    command:
-      - '--es.uri=http://elasticsearch:9222'
-    environment:
-      - ES_USERNAME=elastic
-      - ES_PASSWORD=${ELASTIC_PASSWORD}
-    restart: always
-    ports:
-      - "9114:9114"
+#  elasticsearch-exporter:
+#    image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
+#    container_name: elasticsearch-exporter
+#    command:
+#      - '--es.uri=http://elasticsearch:9222'
+#    environment:
+#      - ES_USERNAME=elastic
+#      - ES_PASSWORD=${ELASTIC_PASSWORD}
+#    restart: always
+#    ports:
+#      - "9114:9114"
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.0.2
